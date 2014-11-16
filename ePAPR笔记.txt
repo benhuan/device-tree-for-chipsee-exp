@@ -1,0 +1,256 @@
+2.2.1 节点名称
+node-name@unit-address
+
+node-name必须由以下内容组成“0-9”、“a-z”、“A-Z”、“,”、“.”、“_”、“+”、“-”，并以字母开头。
+@unit-address指明了节点所在的总线类型，其字符必须由“0-9”、“a-z”、“A-Z”、“,”、“.”、
+“_”、“+”、“-”组成。unit-address必须和节点的reg属性中的第一个地址匹配。如果节点没
+有reg属性，那么整个@unit-address必须全部省略，因此在这棵树的相同等级中，该节点
+只能仅仅通过node-name和其他节点加以区分。节点绑定到一个特定的总线上，对于这个
+绑定，必须指明附加的、更多特定的reg和unit-address属性的格式要求。
+
+2.2.2 建议采用通用的设备节点名称
+以反映设备的功能而不是他的准确的programming model
+  atm 
+  cache-controller  
+  compact-flash  
+  can  
+  cpu  
+  crypto
+  disk
+  display
+  dma-controller 
+  ethernet 
+  ethernet-phy  
+  fdc 
+  flash  
+  gpio  
+  i2c  
+  ide  
+  interrupt-controller  
+  isa  
+  keyboard  
+  mdio  
+  memory  
+  memory-controller  
+  mouse  
+  nvram 
+  parallel 
+  pc-card  
+  pci  
+  pcie 
+  rtc  
+  sata  
+  scsi  
+  serial  
+  sound  
+  spi  
+  timer  
+  usb  
+  vme  
+  watchdog  
+  
+  2.2.3 路径名称
+  在设备树中可以通过一个路径来表示某个节点在设备树中的位置
+  比如：/cpus/cpu@1，表明了根节点的子节点cpus下的一个子节点cpu@1
+  
+  2.2.4 属性
+  设备树中的每个节点通过属性来描述对应设备的特性，属性有一个name和value构成。
+  
+  属性名称：如果是非标准的，最好用一个唯一的字符串前缀
+  属性值：如果属性值为空，表明这个属性是在表达一个真假信息（true-false），这种
+  情况下，有和没有这个属性本身就是一种描述。
+  
+  2.3 标准属性
+  ePAPR标准规定了一个设备节点的标准属性集。对于由ePAPR定义的设备节点，关于这
+  些标准属性的使用，可能会有额外的要求和限制。设备的绑定就是描述一个特定的设备，
+  这也可能会有额外的要求。
+  
+  2.3.1 compatible
+  属性名称：compatible
+  属性值：字符串列表
+  描述：compatible属性有多个定义了设备programming model的字符串组成。在客户程序
+  进行设备驱动匹配时就是通过这些字符串来选择驱动程序。从最特殊的到最通用的，
+  所有字符串都是空结尾字符串。这个属性的多个字符串也使得这个设备在一系列相似
+  设备中表达出自己的兼容性，即允许一个驱动程序来匹配多个同系列相类似的设备。
+  
+  属性值推荐的格式是“manufacturer,model”，生产商和型号
+  比如compatible = “fsl,mpc8641-uart”, “ns16550";
+  对于这个属性，操作系统首先寻找一个支持fsl,mpc8641-uart的驱动程序，如果这个驱动
+  程序没有找到，那么接下来寻找一个支持更加通用的ns16550设备的驱动程序。
+  字符串列表的顺序，一般先写最特殊的字符串，然后写通用的字符串，这样系统寻找驱
+  动时优先寻找最特殊的，也就是最匹配的，然后才会退而求其次寻找通用的驱动程序。
+  
+  2.3.2 model属性
+  属性名称：model
+  属性值：字符串
+该属性字符串指明了生产商的设备的型号编号，比如model = “fsl,MPC8349EMITX”，这个属性
+和compatible属性类似，只不过属性值不能是多个字符串，只能是一个。
+
+2.3.3phandle属性
+属性名称:phandle
+属性值：u32
+描述：这个属性是一个u32数值，该数值是在一棵设备树中一个节点的数字标号。当设备书中的
+其他节点要引用这个节点时，使用这个phandle属性值即可。
+比如：
+pic@10000000 { 
+		phandle = <1>;  
+		interrupt-controller; 
+}; 
+其他设备节点可以通过phandle属性值<1>来引用pic节点
+
+大部分的设备树不显示地包含的phandle属性，但是DTC会自动的在编译DTS时插入这个属性。
+
+2.3.4 status属性
+属性名称：status
+属性值：字符串
+描述：status属性值可取的值有
+1)、“okay”，表示这个设备可操作
+2）、“disable”，表示这个设备当前不可操作，但是后面可能会是可操作的（比如某些设备还没
+有插入或者被关闭了）
+3）、“fail”，表示这个设备不可操作。在这个设备中检测到了严重的错误，等待修复。
+4）、"fail-sss"，表示这个设备不可操作。在这个设备中检测到了严重的错误，等待修复。sss部分
+特定于某个设备，表示检测到了错误条件。
+
+2.3.5 #address-cells属性和#size-cells属性
+属性名称：#address-cells、#size-cells
+属性值：u32
+描述：在设备树的层次体系结构中任何有子节点的设备都可能用到这个属性，他指明了子节点设
+备应该如何被编址。#address-cells属性指明了在子节点的reg属性中用于编码地址的cells的数量。而
+#size-cells属性指明了子节点的reg属性中用于编码地址长度大小的cells的数量。这两个属性并不从
+父节点继承，而是显示的进行定义。遵从ePAPR标准的启动代码应该对所有有子节点的设备节点应该提
+供这两个属性。如果没有提供这两个属性，那么客户程序将会采用默认值<2, 1>。
+
+2.3.6 reg属性
+属性名称:reg
+属性值：<address, length  [address, length]  [address, length]  [address, length]  [address, length] ..... >
+描述：该设备节点所在父总线（parent bus）定义了一个地址空间，而reg属性则描述了该设备节点的资
+源在这个地址空间的地址。大部分情况下，reg属性表示一个经过内存映射的IO寄存器块的偏移量和长度
+，但在某些总线类型上可能有不同的意义。地址空间中由根节点定义的地址是cpu的真实地址。
+用来表示地址和地址长度的cells数量是特定于总线的，并且该cells数量由父节点的#address-cells、#size-cells
+属性确定。如果父节点指定#size-cells为0，那么子节点的reg属性中没有length，只有address。
+比如SoC上的一个设备有两块寄存器地址——偏移量0x3000，长度32字节和偏移量0xFE00，长度256字节，
+如果其父节点指定#address-cells、#size-cells均为1.那么reg属性如下
+reg = <0x3000 0x20 0xFE00 0x100>；
+
+2.3.7 virtual-reg属性
+属性名称：virtual-reg
+属性值：u32
+描述：该属性指定了一个有效的地址，该地址映射到设备节点的reg属性中指定的第一个物理地址
+这个属性使得启动程序能够给客户程序提供一个由虚拟到物理地址的映射关系。
+
+2.3.8 ranges属性
+属性名称：ranges
+属性值：
+描述：该属性提供了一种定义总线地址空间（子地址空间）和总线节点父地址空间（父地址空间）
+之间的映射关系或转换关系的方式。该属性值的格式由（子总线地址，父总线地址，长度）组成。
+子总线地址：是子总线地址空间的物理地址，用于表示这个地址的cells数量特定于总线，也可以通过
+本节点的#address-cells来确定（出现ranges属性的节点）。
+父总线地址：是父总线地址空间的物理地址，用于表示这个地址的cells数量特定于总线，也可以通过
+定义父地址空间节点的#address-cells来确定
+长度：指明了子地址空间的范围大小。用于表示这个大小的cells数量可以通过这个节点的#size-cells来确
+定（出现ranges属性的节点）。
+如果该属性值为空，表示父子地址空间是一致的，无需转换。
+如果总线节点中没有这个属性，则说明子节点和父地址空间不存在映射关系。
+
+soc{
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x0 0xe0000000 0x00100000>;
+
+	serial{
+				device_type = "serial";
+				compatible = "ns16550";
+				reg = <0x4600 0x100>;
+				clock-frequency = <0>;
+				interrupts = <0xA 0x8>;
+				interrupt-parent = < &ipic >;
+	}	
+}
+比如：某个节点中出现ranges = <0x0 0xe0000000 0x00100000>
+表示子节点地址中0x0处开始的1024KB范围内，被映射到父地址空间0xe0000000处开始的1024KB范围
+在这个映射关系下，在父节点中串口设备被编址在0xe0004600，因为0xe0004600 = 0x4600(相对于0x0的
+偏移量) + 0xe0000000（由ranges指定的）
+
+2.3.9 dma-ranges属性
+属性名称：dma-ranges
+属性值：(child-bus-address, parent-bus-address, length)
+描述：这个属性用于描述内存映射总线的DMA结构，这个内存映射总线的设备树父节点可以被来自
+总线的DMA操作访问到。它提供了一个用于定义总线物理地址空间和父总线物理地址空间之间转换关系和
+映射关系的方式。
+
+child-bus-address：子总线地址空间的物理地址。用于表示地址的cells数量特定于总线，也可以通过
+这个节点的#address-cells来确定（出现dma-ranges属性的节点）。
+parent-bus-address：父总线地址空间的物理地址。用于表示地址的cells数量特定于总线，也可以通过
+定义父地址空间的节点的#address-cells来确定。
+length：制定了子地址空间的范围大小。用于范围大小的cells数量可以通过这个节点的#address-cells
+来确定（出现dma-ranges属性的节点）。
+
+2.3.10 name属性
+属性名称：name
+属性值：字符串
+描述：指定节点名称。这个属性被摒弃，不推荐使用，但是在非ePAPR标准的设备树中可能用到。操作
+系统通过建议的节点名称来确定一个设备节点。
+
+2.3.11 device_type属性
+属性名称：device_type
+属性值：字符串
+描述：这个属性在IEEE1275中用来描述设备的FCode 编程模型。因为ePAPR标准没有FCode，所以新增这个
+属性的应用不推荐，仅仅在CPU和内存设备节点为了兼容源自IEEE1275的设备树时使用。
+
+
+2.4 中断和中断映射
+
+ePAPR标准采用中断树模型来描述中断。在设备树中，一个逻辑中断树的存在描述了这个硬件平台中中断的
+层次结构体系和中断源与中断控制器之间的连接。
+
+设备树通过interrupt-parent属性来描述中断源是如何在物理上连接到中断控制器的。一个产生中断的设备
+节点包含一个interrupt-parent属性，这个属性有一个phandle属性值，这个值指向这个设备的中断会发送到的另一个
+设备，而那个设备通常是中断控制器。如果一个产生中断的设备没有interrupt-parent属性，那么该设备节点的
+interrupt-parent会被认为是设备树中这个设备节点的父节点。
+
+每一个产生中断的设备都有一个interrupt属性，这个属性的值描述了这个设备的一个或多个中断源——每个中断源
+通过interrupt specifier这个信息来描述。interrupt specifier的格式和意义是特定于interrupt domain的，他依赖于interrupt domain
+的根节点（注意不是设备树或者中断树根节点）的属性。interrupt domain的根节点通过#interrupt-cells来定义编码一个interrupt specifier
+所需要的u32的个数。比如对于Open PIC中断控制器，编码一个interrupt specifier需要用到两个u32数值，一个用于表示中断编号，一
+个用于中断等级。
+
+interrupt domain的内容就是interrput specifier被解释翻译的部分。interrupt domain的根节点处要么是一个中断控制器，要么是
+一个interrupt nexus。
+
+1、中断控制器是一个物理设备，需要一个驱动来处理连接到这个控制器的中断。当然中断控制器也可能串联到其他的
+interrupt domain。设备树中，中断控制器是通过该节点的interrupt-controller的出现来确定的。
+
+2、interrupt nexus定义了interrupt domain之间的转换关系。这种转换关系是建立在特定于domain和特定于bus信息的基础上。
+interrupt domain之间的转换关系是通过interrupt-map属性来进行的。比如一个PCI设备节点可能是一个interrupt nexus，它定义了
+从PCI中断名称空间（INITA, INITB，etc）到一个带有中断请求号（IRQ）中断控制器的转换。
+
+在向顶端遍历中断树时，如果一个中断控制器节点没有interrupts属性那个该节点就是中断树的根节点。
+
+2.4.1 产生中断的设备的属性
+2.4.1.1 interrupt属性
+属性名称：interrupt
+属性值：< >
+描述：该属性定义了节点产生的一个或多个中断。
+比如interrupt = <0xA 8>;表示中断编号0xA，中断等级8.
+
+2.4.1.2 interrupt-parent属性
+属性名称：interrupt-parent
+属性值：<phandle>
+描述：在中断树中节点的层次结构可能和设备树不匹配，该属性就可以用来对interrupt-parent进行显示声明。其属性值
+<phandle>指向interrupt-parent。如果一个设备节点没有这个属性，那么这个节点的interrupt-parent会被认为是节点在设备树
+中的父节点。
+
+中断控制器的属性
+2.4.2.1 #interrupt-cells属性
+属性名称：#interrupt-cells
+属性值：u32
+描述：该属性用于定义在interrupt domain中编码一个interrupt specifier所需的cells个数
+
+2.4.2.2 interrupt-controller属性
+属性名称：interrupt-controller
+属性值：<empty>
+描述：如果出现这个属性，表明该节点是一个中断控制器节点。
+
+2.4.3 interrupt nexus 属性
+2.4.3.1 interrupt-map 
