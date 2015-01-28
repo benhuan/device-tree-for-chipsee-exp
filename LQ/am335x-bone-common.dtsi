@@ -44,12 +44,12 @@
 				0x15c 0x72      /* spi0_cs0.i2c1_scl, SLEWCTRL_SLOW | INPUT_PULLUP | MODE2 */
 			>;
 		};
-		i2c2_pins: pinmux_i2c2_pins {
-			pinctrl-single,pins = <
-				0x178 0x73 	/* uart1_ctsn.i2c2_sda, SLEWCTRL_SLOW | INPUT_PULLUP | MODE3 */
-				0x17c 0x73	/* uart1_rtsn.i2c2_scl, SLEWCTRL_SLOW | INPUT_PULLUP | MODE3 */
-			>;
-		};
+		//i2c2_pins: pinmux_i2c2_pins {
+		//	pinctrl-single,pins = <
+		//		0x178 0x73 	/* uart1_ctsn.i2c2_sda, SLEWCTRL_SLOW | INPUT_PULLUP | MODE3 */
+		//		0x17c 0x73	/* uart1_rtsn.i2c2_scl, SLEWCTRL_SLOW | INPUT_PULLUP | MODE3 */
+		//	>;
+		//};
 
 		chipsee_lcd_pins: pinmux_chipsee_lcd_pins {
 			pinctrl-single,pins = <
@@ -105,6 +105,7 @@
 				0x040 0x2f      /* KEY_UP gpmc_a0.gpio1_16, INPUT | PULLDIS | MODE7 */
 				0x04c 0x2f      /* KEY_DOWN gpmc_a3.gpio1_19, INPUT | PULLDIS | MODE7 */
 				0x1a4 0x2f      /* KEY_ENTER mcasp0_fxr.gpio3_19, INPUT | PULLDIS | MODE7 */
+
 			>;
 		};
 
@@ -143,6 +144,7 @@
 				0x19c 0x22      /* mcasp0_ahclkr.mcasp0_axr2, INPUT | MODE2 */
 			>;
 		};
+
 	};
 
 	ocp: ocp {
@@ -236,7 +238,12 @@
 				gpio-key,wakeup;
 			};
 		};
-
+		longqi_d_can0 {
+			compatible = "bone-pinmux-helper";
+			pinctrl-names = "default";
+			pinctrl-0 = <&longqi_dcan0_pins>;
+			status = "okay";
+		};
 		gpio_setups {
 			compatible = "gpio-of-helper";
 			status = "okay";
@@ -803,12 +810,6 @@
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&chipsee_uart4_pins>;
-};
-
-&dcan0 {
-	status = "okay";
-	pinctrl-names = "default";
-	pinctrl-0 = <&longqi_dcan0_pins>;
 };
 
 &cpsw_emac0 {
